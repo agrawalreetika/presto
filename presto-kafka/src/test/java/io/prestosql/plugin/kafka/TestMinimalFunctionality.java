@@ -18,13 +18,19 @@ import com.google.common.collect.ImmutableMap;
 import io.prestosql.metadata.QualifiedObjectName;
 import io.prestosql.plugin.kafka.util.TestingKafka;
 import io.prestosql.spi.connector.SchemaTableName;
+import io.prestosql.spi.type.TimeZoneKey;
 import io.prestosql.testing.AbstractTestQueryFramework;
+import io.prestosql.testing.MaterializedResult;
+import io.prestosql.testing.MaterializedRow;
 import io.prestosql.testing.QueryRunner;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 import static io.prestosql.plugin.kafka.KafkaQueryRunner.createKafkaQueryRunner;
@@ -88,5 +94,17 @@ public class TestMinimalFunctionality
                 }
             }
         }
+    }
+
+    @Test
+    public void testTopicMetadata() {
+        ZonedDateTime currentTimestamp = ZonedDateTime.now(ZoneId.of(TimeZoneKey.UTC_KEY.getId()));
+
+        createMessages(topicName);
+
+        MaterializedResult result = getQueryRunner().execute(getSession(), "SELECT max(_timestamp) FROM default." + topicName);
+        ZonedDateTime messageCreationTimestamp = (ZonedDateTime) result.getMaterializedRows().get(0).getField(0);
+
+        assertTrue(messageCreationTimestamp.compareTo(currentTimestamp)>=0);
     }
 }

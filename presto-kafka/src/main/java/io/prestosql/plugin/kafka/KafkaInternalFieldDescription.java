@@ -24,6 +24,7 @@ import java.util.Optional;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static com.google.common.collect.ImmutableMap.toImmutableMap;
+import static io.prestosql.spi.type.TimestampWithTimeZoneType.TIMESTAMP_WITH_TIME_ZONE;
 import static io.prestosql.spi.type.VarcharType.createUnboundedVarcharType;
 import static java.util.Arrays.stream;
 import static java.util.Objects.requireNonNull;
@@ -41,6 +42,11 @@ public enum KafkaInternalFieldDescription
      * <tt>_partition_id</tt> - Kafka partition id.
      */
     PARTITION_ID_FIELD("_partition_id", BigintType.BIGINT, "Partition Id"),
+
+    /**
+     * <tt>_timestamp</tt> - Kafka message timestamp.
+     */
+    TIMESTAMP_FIELD("_timestamp", TIMESTAMP_WITH_TIME_ZONE, "Message creation timestamp"),
 
     /**
      * <tt>_partition_offset</tt> - The current offset of the message in the partition.

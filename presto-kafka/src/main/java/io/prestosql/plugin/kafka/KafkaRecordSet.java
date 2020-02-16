@@ -22,6 +22,7 @@ import io.prestosql.spi.block.Block;
 import io.prestosql.spi.connector.ColumnHandle;
 import io.prestosql.spi.connector.RecordCursor;
 import io.prestosql.spi.connector.RecordSet;
+import io.prestosql.spi.type.TimeZoneKey;
 import io.prestosql.spi.type.Type;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -37,6 +38,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static io.prestosql.decoder.FieldValueProviders.booleanValueProvider;
 import static io.prestosql.decoder.FieldValueProviders.bytesValueProvider;
 import static io.prestosql.decoder.FieldValueProviders.longValueProvider;
+import static io.prestosql.spi.type.DateTimeEncoding.packDateTimeWithZone;
 import static java.lang.Math.max;
 import static java.util.Collections.emptyIterator;
 import static java.util.Objects.requireNonNull;
@@ -169,6 +171,9 @@ public class KafkaRecordSet
                     switch (fieldDescription) {
                         case PARTITION_OFFSET_FIELD:
                             currentRowValuesMap.put(columnHandle, longValueProvider(message.offset()));
+                            break;
+                        case TIMESTAMP_FIELD:
+                            currentRowValuesMap.put(columnHandle, longValueProvider(packDateTimeWithZone(message.timestamp(), TimeZoneKey.UTC_KEY)));
                             break;
                         case MESSAGE_FIELD:
                             currentRowValuesMap.put(columnHandle, bytesValueProvider(messageData));
